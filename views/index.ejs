@@ -4,7 +4,26 @@
         <%- include('shared/navbar.ejs') %>
 
         <div class="container">
-
+            <% if (products) {  %>
+                <div class="row">
+                    <div class="col-xs-4 grid">
+                        <article class="card">
+                            <header class="card-header text-center">
+                                <h1 class="product-title">TV</h1>
+                            </header>
+                            <div class="card-image">
+                                <img src="https://www.gettyimages.ie/gi-resources/images/Homepage/Hero/UK/CMS_Creative_164657191_Kingfisher.jpg" alt="A tv">
+                            </div>
+                            <div class="card-content">
+                                <h2 class="product-price">$19.99</h2>
+                                <p class="product-description">Hello hi how are you ?</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            <% } else { %>
+                <h1>No products found</h1>
+            <% } %>
         </div>
 
     <%- include('shared/footer.ejs') %>

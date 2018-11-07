@@ -9,8 +9,8 @@ require('mongoose-currency').loadType(mongoose);
 //Now, Currency is the new data type in mongoose just like Number or String
 const Currency = mongoose.Types.Currency;
 
-//create a new schema or a blueprint for product object
-const product = new Schema({
+//create a new schema or a blueprint for products object
+const productSchema = new Schema({
     imagePath: {
         type: String,
         required: true
@@ -34,4 +34,4 @@ const product = new Schema({
 });
 
 //export this model as a module to be used in other places
-module.exports = mongoose.model('Product', product);
+module.exports = mongoose.model('Product', productSchema);
