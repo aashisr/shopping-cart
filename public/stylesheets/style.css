@@ -5,3 +5,11 @@ body {
   margin: 0;
   font-family: 'Open Sans', sans-serif;
 }
+
+.navbar {
+  margin-bottom: 10px;
+}
+
+.grid {
+  margin-bottom: 10px;
+}
