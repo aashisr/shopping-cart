@@ -1,0 +1,23 @@
+<%- include('../shared/header.ejs') %>
+</head>
+<body>
+<%- include('../shared/navbar.ejs') %>
+
+    <div class="container">
+        <div class="col-6 mx-auto">
+            <h3><%= product.title %></h3>
+            <hr>
+            <div class="image">
+                <img src="<%= product.imagePath %>" alt="<%= product.title %>">
+            </div>
+            <h2><%= product.price %></h2>
+            <p><%= product.description %></p>
+
+            <form action="#" method="post">
+                <button class="btn btn-primary" type="submit">Add to Cart</button>
+                <input type="hidden" name="productId" value="<%= product._id %>">
+            </form>
+        </div>
+    </div>
+
+<%- include('../shared/footer.ejs') %>

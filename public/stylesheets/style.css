@@ -13,3 +13,21 @@ body {
 .grid {
   margin-bottom: 10px;
 }
+
+.product-link:link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.product-link:visited {
+    color: inherit;
+    text-decoration: none;
+}
+
+.card-image {
+    padding: 0 10px;
+}
+
+.product-description {
+    padding: 0 10px;
+}

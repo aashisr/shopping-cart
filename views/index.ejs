@@ -8,20 +8,22 @@
                 <div class="row">
                     <% products.forEach(function (product) { %>
                         <div class="col-4 grid">
-                            <article class="card">
-                                <header class="card-header text-center">
-                                    <h2 class="product-title"><%= product.title %></h2>
-                                </header>
-                                <div class="card-image">
-                                    <img class="img-fluid"
-                                         src="<%= product.image %>"
-                                         alt="<%= product.title %>">
-                                </div>
-                                <div class="card-content">
-                                    <h2 class="product-price text-center"><%= product.price %></h2>
-                                    <p class="product-description text-center"><%= product.description %></p>
-                                </div>
-                            </article>
+                            <a class="product-link" href="products/product-details/<%= product._id %>">
+                                <article class="card">
+                                    <header class="card-header text-center">
+                                        <h2 class="product-title"><%= product.title %></h2>
+                                    </header>
+                                    <div class="card-image">
+                                        <img class="img-fluid"
+                                             src="<%= product.imagePath %>"
+                                             alt="<%= product.title %>">
+                                    </div>
+                                    <div class="card-content">
+                                        <h2 class="product-price text-center"><%= product.price %></h2>
+                                        <p class="product-description"><%= product.description %></p>
+                                    </div>
+                                </article>
+                            </a>
                         </div>
                     <% }); %>
                 </div>

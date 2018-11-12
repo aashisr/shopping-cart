@@ -20,7 +20,8 @@ productRouter.route('/')
             .then((products) => {
                 res.render('index.ejs', {
                     products: products,
-                    title: 'Shopping Cart'
+                    pageTitle: 'Shopping Cart',
+                    active: 'shop'
                 });
             }, (err) => next(err)) //sends the error to the error handler
             .catch((err) => next(err));
@@ -29,20 +30,36 @@ productRouter.route('/')
 productRouter.route('/add-product')
     .get((req, res, next) => {
         res.render('product/addProduct.ejs', {
-            title: 'Add Product'
+            pageTitle: 'Add Product',
+            active: 'addProduct'
         });
     })
     .post((req, res, next) => {
-        console.log(req.body);
         //Post the parsed request to the Products model i.e products collection
         //req.body is already parsed by bodyParser
+        //create is a mongoose method
         Products.create(req.body)
             .then((product) => {
                 res.render('product/addProduct.ejs', {
-                    title: 'Add Product'
+                    pageTitle: 'Add Product',
+                    active: 'addProduct'
                 });
             }, (err) => next(err))
             .catch((err) => next(err));
+    });
+
+productRouter.route('/product-details/:productId')
+    .get((req, res, next) => {
+        Products.findById(req.params.productId)
+            .then((product) => {
+                res.render('product/productDetails.ejs', {
+                    product: product,
+                    pageTitle: product.title,
+                    active: 'shop'
+                });
+            }, (err) => next(err))
+            .catch((err) => next(err));
+
     });
 
 //Export this route as a module

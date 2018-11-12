@@ -11,7 +11,8 @@ router.get('/', function(req, res, next) {
         .then((products) => {
             res.render('index.ejs', {
                 products: products,
-                title: 'Shopping Cart'
+                pageTitle: 'Shopping Cart',
+                active: 'shop'
             });
         }, (err) => next(err)) //sends the error to the error handler
         .catch((err) => next(err));

@@ -6,13 +6,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
         <div class="navbar-nav">
-            <a class="nav-item nav-link active" href="/">Shop <span class="sr-only">(current)</span></a>
-            <a class="nav-item nav-link" href="/products/add-product">Add Product</a>
-            <a class="nav-item nav-link" href="#">Cart</a>
-            <a class="nav-item nav-link" href="#">Orders</a>
+            <a class="nav-item nav-link <%= active === 'shop' ? 'active': '' %>" href="/">Shop <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>" href="/products/add-product">Add Product</a>
+            <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="#">Cart</a>
+            <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="#">Orders</a>
 
-            <a class="nav-item nav-link" href="#">Register</a>
-            <a class="nav-item nav-link" href="#">Login</a>
+            <a class="nav-item nav-link <%= active === 'register' ? 'active' : '' %>" href="#">Register</a>
+            <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="#">Login</a>
         </div>
     </div>
 </nav>
