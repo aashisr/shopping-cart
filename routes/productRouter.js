@@ -48,7 +48,33 @@ productRouter.route('/add-product')
             .catch((err) => next(err));
     });
 
-productRouter.route('/product-details/:productId')
+productRouter.route('/edit/:productId')
+    .get((req, res, next) => {
+        Products.findById(req.params.productId)
+            .then((product) => {
+                res.render('product/editProduct.ejs', {
+                    product: product,
+                    pageTitle: 'Edit Product',
+                    active: 'addProduct'
+                });
+            }, (err) => next(err))
+            .catch((err) => next(err));
+    })
+    .post((req, res, next) => {
+        //Find the product by id and update
+        Products.findByIdAndUpdate(req.params.productId,
+            { $set: req.body },
+            { new: true } //new: true is to return the updated dish
+            )
+            .then((product) => {
+                console.log(req.body);
+                console.log('Updated product: ', product);
+                res.redirect('/');
+            }, (err) => next(err))
+            .catch((err) => next(err));
+    });
+
+productRouter.route('/details/:productId')
     .get((req, res, next) => {
         Products.findById(req.params.productId)
             .then((product) => {

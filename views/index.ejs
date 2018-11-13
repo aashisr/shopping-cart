@@ -8,8 +8,8 @@
                 <div class="row">
                     <% products.forEach(function (product) { %>
                         <div class="col-4 grid">
-                            <a class="product-link" href="products/product-details/<%= product._id %>">
-                                <article class="card">
+                            <article class="card">
+                                <a class="product-link" href="products/details/<%= product._id %>">
                                     <header class="card-header text-center">
                                         <h2 class="product-title"><%= product.title %></h2>
                                     </header>
@@ -19,11 +19,16 @@
                                              alt="<%= product.title %>">
                                     </div>
                                     <div class="card-content">
-                                        <h2 class="product-price text-center"><%= product.price %></h2>
+                                        <%# mongoose-currency stores the currency in cents by multiplying by 100 %>
+                                        <h2 class="product-price text-center">€ <%= product.price/100 %></h2>
                                         <p class="product-description"><%= product.description %></p>
                                     </div>
-                                </article>
-                            </a>
+                                </a>
+                                <div class="p-2 text-center">
+                                    <a href="/products/edit/<%= product._id %>"><button class="btn btn-success">Edit</button></a>
+                                    <a href="/products/delete/<%= product._id %>"><button class="btn btn-success">Delete</button></a>
+                                </div>
+                            </article>
                         </div>
                     <% }); %>
                 </div>
