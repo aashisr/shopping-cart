@@ -67,8 +67,6 @@ productRouter.route('/edit/:productId')
             { new: true } //new: true is to return the updated dish
             )
             .then((product) => {
-                console.log(req.body);
-                console.log('Updated product: ', product);
                 res.redirect('/');
             }, (err) => next(err))
             .catch((err) => next(err));
@@ -86,6 +84,16 @@ productRouter.route('/details/:productId')
             }, (err) => next(err))
             .catch((err) => next(err));
 
+    });
+
+productRouter.route('/delete/:productId')
+    .get((req, res, next) => {
+        Products.findByIdAndRemove(req.params.productId)
+            .then((response) => {
+                console.log(response);
+                res.redirect('/');
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
 
 //Export this route as a module
