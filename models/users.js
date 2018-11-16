@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-//Automatically adds username and password field to the userSchema
-const passportLocalMongoose = require('passport-local-mongoose');
 
 const UserSchema = new Schema({
-    //Username and hash passwords will be automatically added by passportLocalMongoose plugin
-    firstName: {
+    email: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },    firstName: {
         type: String,
         default: ''
     },
@@ -20,7 +24,11 @@ const UserSchema = new Schema({
     cart: {
         items: [
             {
-                product: { type: mongoose.Schema.Types.ObjectId, required: true, },
+                product: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Product',
+                    required: true
+                },
                 quantity: { type: Number, required: true}
             }
         ]
@@ -28,9 +36,6 @@ const UserSchema = new Schema({
 },{
     timestamps: true
 });
-
-//Use passportLocalMongoose as a plugin, set userName field to email instead of username
-UserSchema.plugin(passportLocalMongoose, {"usernameField": "email"});
 
 //Create a module and export
 const Users = mongoose.model('User', UserSchema);
