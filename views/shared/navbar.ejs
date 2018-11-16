@@ -5,14 +5,19 @@
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-            <a class="nav-item nav-link <%= active === 'shop' ? 'active': '' %>" href="/">Shop <span class="sr-only">(current)</span></a>
-            <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>" href="/products/add-product">Add Product</a>
+        <div class="navbar-nav mr-auto">
+            <a class="nav-item nav-link <%= active === 'shop' ? 'active' : '' %>" href="/">Shop <span
+                        class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>"
+               href="/products/add-product">Add Product</a>
             <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="#">Cart</a>
             <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="#">Orders</a>
+        </div>
 
-            <a class="nav-item nav-link <%= active === 'register' ? 'active' : '' %>" href="/users/register">Register</a>
-            <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="#">Login</a>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link <%= active === 'register' ? 'active' : '' %>"
+               href="/users/register">Register</a>
+            <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="/users/login">Login</a>
         </div>
     </div>
 </nav>
