@@ -12,12 +12,13 @@
             </div>
             <h2><%= product.price %></h2>
             <p><%= product.description %></p>
-
-            <form action="#" method="post">
-                <button class="btn btn-primary" type="submit">Add to Cart</button>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <input type="hidden" name="productId" value="<%= product._id %>">
-            </form>
+            <% if (isLoggedIn) { %>
+                <form action="/cart/add-product" method="post">
+                    <button class="btn btn-primary" type="submit">Add to Cart</button>
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="productId" value="<%= product._id %>">
+                </form>
+            <% } %>
         </div>
     </div>
 

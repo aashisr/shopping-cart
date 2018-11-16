@@ -8,7 +8,6 @@ const session = require('express-session');
 const csrf = require('csurf');
 //for storing the sessions in mongodb
 const MongoDBStore = require('connect-mongodb-session')(session);
-
 //Mongoose helps to impose a structure on the documents that is going to be stored in the database collection
 const mongoose = require('mongoose');
 
@@ -16,7 +15,9 @@ const config = require('./config');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const productRouter = require('./routes/productRouter');
+const cartRouter = require('./routes/cartRouter');
 const Products = require('./models/products');
+const Users = require('./models/users');
 
 //url to connect to mongodb, imported from config.js
 const url = config.mongoUrl;
@@ -63,6 +64,28 @@ app.use(session({
     store: store //Store sessions in the store variable defined above
 }));
 
+//Create the mongoose user model as a object with the user id stored in sessions
+//which can use the methods defined in user model
+app.use((req, res, next) => {
+    //If session does not exist, user is not needed
+    if (!req.session.user) {
+        return next();
+    }
+    else {
+        //Find the user object by the user id from session
+        Users.findById(req.session.user._id)
+            .then((user) => {
+                //Store the returned user in req.user which has all methods defined in user model
+                req.user = user;
+                next();
+            })
+            .catch((err) => {
+                console.log(err);
+                next(err);
+            });
+    }
+});
+
 //After session, because csrf token is stored in session
 app.use(csrfProtection);
 
@@ -75,6 +98,7 @@ app.use((req, res, next) => {
 
 app.use('/products', productRouter);
 app.use('/users', usersRouter);
+app.use('/cart', cartRouter);
 app.use('/', indexRouter);
 
 

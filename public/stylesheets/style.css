@@ -35,3 +35,7 @@ body {
 .product-description {
     padding: 0 10px;
 }
+
+.form-inline {
+    display: inline-block;
+}

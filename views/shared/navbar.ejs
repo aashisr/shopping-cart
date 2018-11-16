@@ -11,7 +11,7 @@
             <% if (isLoggedIn) { %>
                 <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>"
                    href="/products/add-product">Add Product</a>
-                <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="#">Cart</a>
+                <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="/cart">Cart</a>
                 <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="#">Orders</a>
             <% } %>
         </div>
@@ -21,7 +21,8 @@
                    href="/users/register">Register</a>
                 <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="/users/login">Login</a>
             <% } else { %>
-                <a class="nav-item nav-link" href="/users/logout">Logout</a><% } %>
+                <a class="nav-item nav-link" href="/users/logout">Logout</a>
+                <% } %>
         </div>
     </div>
 </nav>

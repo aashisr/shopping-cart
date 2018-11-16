@@ -1,0 +1,29 @@
+<%- include('../shared/header.ejs') %>
+</head>
+<body>
+<%- include('../shared/navbar.ejs') %>
+
+<div class="container">
+    <h1>Your Cart</h1>
+    <% if (products.length > 0) { %>
+        <ul class="list-unstyled">
+            <% products.forEach((product, index) => { %>
+                <li class="mb-2">
+                    <div class="row">
+                        <span class="col-1"><%= index + 1 %>.</span>
+                        <span class="col-4"><%= product.product.title %></span>
+                        <span class="col-4">Quantity: <%= product.quantity %></span>
+                        <form class="col-3 form-inline" action="/cart/delete-item">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p class="text-center">No products added to the cart.</p>
+    <% } %>
+</div>
+
+<%- include('../shared/footer.ejs') %>
