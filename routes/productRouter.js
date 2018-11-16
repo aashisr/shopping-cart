@@ -22,8 +22,7 @@ productRouter.route('/')
                 res.render('index.ejs', {
                     products: products,
                     pageTitle: 'Shopping Cart',
-                    active: 'shop',
-                    isLoggedIn: req.session.authenticated
+                    active: 'shop'
                 });
             }, (err) => next(err)) //sends the error to the error handler
             .catch((err) => next(err));
@@ -33,8 +32,7 @@ productRouter.route('/add-product')
     .get(authenticate.isLoggedIn, (req, res, next) => {
         res.render('product/addProduct.ejs', {
             pageTitle: 'Add Product',
-            active: 'addProduct',
-            isLoggedIn: req.session.authenticated
+            active: 'addProduct'
         });
     })
     .post(authenticate.isLoggedIn, (req, res, next) => {
@@ -55,8 +53,7 @@ productRouter.route('/edit/:productId')
                 res.render('product/editProduct.ejs', {
                     product: product,
                     pageTitle: 'Edit Product',
-                    active: 'addProduct',
-                    isLoggedIn: req.session.authenticated
+                    active: 'addProduct'
                 });
             }, (err) => next(err))
             .catch((err) => next(err));
@@ -80,8 +77,7 @@ productRouter.route('/details/:productId')
                 res.render('product/productDetails.ejs', {
                     product: product,
                     pageTitle: product.title,
-                    active: 'shop',
-                    isLoggedIn: req.session.authenticated
+                    active: 'shop'
                 });
             }, (err) => next(err))
             .catch((err) => next(err));

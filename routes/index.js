@@ -12,8 +12,7 @@ router.get('/', function(req, res, next) {
             res.render('index.ejs', {
                 products: products,
                 pageTitle: 'Shopping Cart',
-                active: 'shop',
-                isLoggedIn: req.session.authenticated
+                active: 'shop'
             });
         }, (err) => next(err)) //sends the error to the error handler
         .catch((err) => next(err));

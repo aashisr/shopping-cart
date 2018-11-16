@@ -5,6 +5,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
+const csrf = require('csurf');
 //for storing the sessions in mongodb
 const MongoDBStore = require('connect-mongodb-session')(session);
 
@@ -44,6 +45,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//Initialize csrf protection
+//Stores the secret token in session by default
+const csrfProtection = csrf();
+
 //Initialize a store for sessions
 const store = new MongoDBStore({
     uri: config.mongoUrl,
@@ -57,6 +62,16 @@ app.use(session({
     saveUninitialized: false, //do not save session if not needed
     store: store //Store sessions in the store variable defined above
 }));
+
+//After session, because csrf token is stored in session
+app.use(csrfProtection);
+
+//Set local variables that are passed in to all the views that are rendered
+app.use((req, res, next) => {
+    res.locals.isLoggedIn = req.session.authenticated,
+    res.locals.csrfToken = req.csrfToken(); //Pass the csrfToken to the view which is in req
+    next();
+});
 
 app.use('/products', productRouter);
 app.use('/users', usersRouter);

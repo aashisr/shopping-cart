@@ -21,8 +21,7 @@ userRouter.route('/register')
     .get((req, res, next) => {
       res.render('user/register.ejs', {
           pageTitle: 'Register',
-          active: 'register',
-          isLoggedIn: req.session.authenticated
+          active: 'register'
       });
     })
     .post((req, res, next) => {
@@ -74,8 +73,7 @@ userRouter.route('/login')
     .get((req, res, next) => {
         res.render('user/login.ejs', {
             pageTitle: 'Login',
-            active: 'login',
-            isLoggedIn: req.session.authenticated
+            active: 'login'
         });
     })
     .post((req, res, next) => {
