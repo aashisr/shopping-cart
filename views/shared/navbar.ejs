@@ -8,16 +8,20 @@
         <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link <%= active === 'shop' ? 'active' : '' %>" href="/">Shop <span
                         class="sr-only">(current)</span></a>
-            <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>"
-               href="/products/add-product">Add Product</a>
-            <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="#">Cart</a>
-            <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="#">Orders</a>
+            <% if (isLoggedIn) { %>
+                <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>"
+                   href="/products/add-product">Add Product</a>
+                <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="#">Cart</a>
+                <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="#">Orders</a>
+            <% } %>
         </div>
-
         <div class="navbar-nav">
-            <a class="nav-item nav-link <%= active === 'register' ? 'active' : '' %>"
-               href="/users/register">Register</a>
-            <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="/users/login">Login</a>
+            <% if (!isLoggedIn) { %>
+                <a class="nav-item nav-link <%= active === 'register' ? 'active' : '' %>"
+                   href="/users/register">Register</a>
+                <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="/users/login">Login</a>
+            <% } else { %>
+                <a class="nav-item nav-link" href="/users/logout">Logout</a><% } %>
         </div>
     </div>
 </nav>

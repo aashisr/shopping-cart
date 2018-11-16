@@ -1,8 +1,12 @@
+const path = require('path');
+
 const createError = require('http-errors');
 const express = require('express');
-const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const session = require('express-session');
+//for storing the sessions in mongodb
+const MongoDBStore = require('connect-mongodb-session')(session);
 
 //Mongoose helps to impose a structure on the documents that is going to be stored in the database collection
 const mongoose = require('mongoose');
@@ -39,6 +43,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//Initialize a store for sessions
+const store = new MongoDBStore({
+    uri: config.mongoUrl,
+    collection: 'sessions' //Name of the collection in db
+});
+
+//Set up session, cookie for this session is set by default
+app.use(session({
+    secret: config.secretKey, //secret to sign the hash
+    resave: false, //do not save session on every request but only if something has changed
+    saveUninitialized: false, //do not save session if not needed
+    store: store //Store sessions in the store variable defined above
+}));
 
 app.use('/products', productRouter);
 app.use('/users', usersRouter);

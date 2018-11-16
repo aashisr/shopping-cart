@@ -6,6 +6,10 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
+.container {
+    margin-bottom: 50px;
+}
+
 .navbar {
   margin-bottom: 10px;
 }
