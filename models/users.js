@@ -91,6 +91,15 @@ userSchema.methods.deleteItemFromCart = function (productId) {
     return this.save();
 };
 
+//Method to empty the cart
+userSchema.methods.emptyCart = function () {
+    //Set the cart items in the user object to empty array
+    this.cart = { items: [] };
+
+    //Save this cart and return
+    return this.save();
+};
+
 //Create a module and export
 const Users = mongoose.model('User', userSchema);
 module.exports = Users;

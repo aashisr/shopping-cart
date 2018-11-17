@@ -1,0 +1,28 @@
+<%- include('../shared/header.ejs') %>
+</head>
+<body>
+<%- include('../shared/navbar.ejs') %>
+
+<div class="container">
+    <h1>Your Orders</h1>
+    <% if (products.length > 0) { %>
+        <ul class="list-unstyled">
+            <% products.forEach((products, index) => { %>
+                <h2 class="mb-2">Order <%= index + 1 %></h2>
+                <% products.products.forEach((product, index) => { %>
+                    <li class="mb-2">
+                        <div class="row">
+                            <span class="col-1"><%= index + 1 %>.</span>
+                            <span class="col-4"><%= product.product.title %></span>
+                            <span class="col-4">Quantity: <%= product.quantity %></span>
+                        </div>
+                    </li>
+                <% }) %>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p class="text-center">You do not have any orders.</p>
+    <% } %>
+</div>
+
+<%- include('../shared/footer.ejs') %>

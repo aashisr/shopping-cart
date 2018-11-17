@@ -16,6 +16,7 @@ const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const productRouter = require('./routes/productRouter');
 const cartRouter = require('./routes/cartRouter');
+const orderRouter = require('./routes/orderRouter');
 const Products = require('./models/products');
 const Users = require('./models/users');
 
@@ -99,6 +100,7 @@ app.use((req, res, next) => {
 app.use('/products', productRouter);
 app.use('/users', usersRouter);
 app.use('/cart', cartRouter);
+app.use('/orders', orderRouter);
 app.use('/', indexRouter);
 
 
