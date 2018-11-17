@@ -15,9 +15,12 @@ cartRouter.use(bodyParser.json());
 
 cartRouter.route('/')
     .get(authenticate.isLoggedIn, (req, res, next) => {
-        //Find all the products from the Products model i.e products collection in database
-        Users.findById(req.user._id)
+        //req.user already contains the user object which also includes the cart
+        //So no need to find the user by id again
+        //Since, req.user.populate does not return a promise, execPopulate is chained to return promise
+        req.user
             .populate('cart.items.product')
+            .execPopulate()
             .then((user) => {
                 res.render('shop/cart.ejs', {
                     products: user.cart.items,
@@ -46,8 +49,15 @@ cartRouter.route('/add-product')
 
 cartRouter.route('/delete-item')
     .post(authenticate.isLoggedIn, (req, res, next) => {
-        //Find the cart item by id and remove
-        res.redirect('/cart');
+        // Get the user object from the request
+        // deleteItemFromCart is a method in user model
+        req.user
+            .deleteItemFromCart(req.body.productId)
+            .then((result) => {
+                console.log(result);
+                res.redirect('/cart');
+            }, (err) => next(err))
+            .catch((err) => next(err));
     });
 
 //Export this route as a module

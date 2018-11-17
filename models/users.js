@@ -40,7 +40,6 @@ const userSchema = new Schema({
 //Implement a method to add products to the cart
 //Does not support arrow function as it prevents binding 'this'
 userSchema.methods.addToCart = function (product) {
-    console.log('Add to cart: ', product);
     //Find if the product is already in the cart
     //For that, find the index of the product id in the cart.items array
     const cartProductIndex = this.cart.items.findIndex((cp) => {
@@ -75,8 +74,21 @@ userSchema.methods.addToCart = function (product) {
     //Save the updated cart and return
     this.cart = updatedCart;
     return this.save();
+};
 
-    //Find the user and update the cart of that user
+//Method to delete items from cart
+userSchema.methods.deleteItemFromCart = function (productId) {
+    //Filter the items from the existing cart and return updated cart by removing the product with given product id
+    const updatedCartItems = this.cart.items.filter((item) => {
+        //Return all items except the one with the productId given as argument
+        return item.product.toString() !== productId.toString();
+    });
+
+    //Set the updatedCartItems as the cart items in user object
+    this.cart.items = updatedCartItems;
+
+    //Save this user object and return
+    return this.save();
 };
 
 //Create a module and export

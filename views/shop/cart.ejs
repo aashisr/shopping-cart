@@ -13,8 +13,9 @@
                         <span class="col-1"><%= index + 1 %>.</span>
                         <span class="col-4"><%= product.product.title %></span>
                         <span class="col-4">Quantity: <%= product.quantity %></span>
-                        <form class="col-3 form-inline" action="/cart/delete-item">
+                        <form class="col-3 form-inline" action="/cart/delete-item" method="post">
                             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <input type="hidden" name="productId" value="<%= product.product._id %>">
                             <button class="btn btn-sm btn-danger" type="submit">Delete</button>
                         </form>
                     </div>
