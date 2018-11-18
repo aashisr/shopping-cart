@@ -19,21 +19,22 @@ userRouter.get('/', function(req, res, next) {
 
 userRouter.route('/register')
     .get((req, res, next) => {
-      res.render('user/register.ejs', {
-          pageTitle: 'Register',
-          active: 'register'
-      });
+        //Get the flash message if any
+        const errorMessage = req.flash('error');
+
+        res.render('user/register.ejs', {
+            pageTitle: 'Register',
+            active: 'register',
+            errorMessage: errorMessage
+        });
     })
     .post((req, res, next) => {
-        console.log('Register post');
-        console.log(req.body);
-
         //Find if a user already exists
         Users.findOne({email: req.body.email})
             .then((user) => {
                 //If user with given email exists already
                 if (user) {
-                    console.log('User already exists');
+                    req.flash('error', 'User with given email already exists.');
                     return res.redirect('/users/register');
                 }
 
@@ -49,6 +50,9 @@ userRouter.route('/register')
                         });
 
                         newUser.save();
+
+                        //Set a success message
+                        req.flash('success', 'You are successfully registered. Please, log in here.')
 
                         res.redirect('/users/login');
                     });
@@ -71,9 +75,15 @@ userRouter.route('/register')
 
 userRouter.route('/login')
     .get((req, res, next) => {
+        //Get the success and error messages
+        const successMessage = req.flash('success');
+        const errorMessage = req.flash('error');
+
         res.render('user/login.ejs', {
             pageTitle: 'Login',
-            active: 'login'
+            active: 'login',
+            successMessage: successMessage,
+            errorMessage: errorMessage
         });
     })
     .post((req, res, next) => {
@@ -82,6 +92,7 @@ userRouter.route('/login')
             .then((user) => {
                 //If user does not exist
                 if (!user) {
+                    req.flash('error', 'Invalid email or password. Please, try again.');
                     return res.redirect('/users/login');
                 }
 
@@ -102,16 +113,17 @@ userRouter.route('/login')
                         }
 
                         //If password is not valid,
+                        req.flash('error', 'Invalid email or password. Please, try again.');
                         res.redirect('/users/login');
                     })
                     .catch((err) => {
-                        console.log(err);
+                        req.flash('error', err);
                         res.redirect('/users/login');
                     });
 
             })
             .catch((err) => {
-                console.log(err);
+                req.flash('error', err);
                 res.redirect('/users/login');
             });
     });

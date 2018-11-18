@@ -21,6 +21,7 @@
                    href="/users/register">Register</a>
                 <a class="nav-item nav-link <%= active === 'login' ? 'active' : '' %>" href="/users/login">Login</a>
             <% } else { %>
+                <li class="nav-item nav-link"><%= user.firstName %> <%= user.lastName %> </li>
                 <a class="nav-item nav-link" href="/users/logout">Logout</a>
                 <% } %>
         </div>

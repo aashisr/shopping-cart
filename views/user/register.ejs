@@ -7,6 +7,11 @@
     <div class="row">
         <div class="col-6 mx-auto">
             <h1>Register</h1>
+            <% if (errorMessage.length > 0) { %>
+                <div class="alert alert-danger">
+                    <%= errorMessage %>
+                </div>
+            <% } %>
             <form action="/users/register" method="post">
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -25,7 +30,7 @@
                     <input type="text" id="firstName" name="firstName" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label for="lastName">LastName</label>
+                    <label for="lastName">Last Name</label>
                     <input type="text" id="lastName" name="lastName" class="form-control">
                 </div>
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">

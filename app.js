@@ -10,6 +10,7 @@ const csrf = require('csurf');
 const MongoDBStore = require('connect-mongodb-session')(session);
 //Mongoose helps to impose a structure on the documents that is going to be stored in the database collection
 const mongoose = require('mongoose');
+const flash = require('connect-flash');
 
 const config = require('./config');
 const indexRouter = require('./routes/index');
@@ -65,6 +66,9 @@ app.use(session({
     store: store //Store sessions in the store variable defined above
 }));
 
+//Flash should be initialized after session
+app.use(flash());
+
 //Create the mongoose user model as a object with the user id stored in sessions
 //which can use the methods defined in user model
 app.use((req, res, next) => {
@@ -92,6 +96,7 @@ app.use(csrfProtection);
 
 //Set local variables that are passed in to all the views that are rendered
 app.use((req, res, next) => {
+    res.locals.user = req.user,
     res.locals.isLoggedIn = req.session.authenticated,
     res.locals.csrfToken = req.csrfToken(); //Pass the csrfToken to the view which is in req
     next();
