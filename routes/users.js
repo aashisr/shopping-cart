@@ -3,9 +3,22 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const sendgridTransport = require('nodemailer-sendgrid-transport');
 
 const Users = require('../models/users');
 const authenticate = require('../authenticate');
+const config = require('../config');
+
+//Username and password or api key as options for sendgridTransport method
+var sendgridOptions = {
+    auth: {
+        api_key: config.sendGridApi
+    }
+};
+
+//Initialize mailer for nodemailer
+const mailer = nodemailer.createTransport(sendgridTransport(sendgridOptions));
 
 const userRouter = express.Router();
 
@@ -49,13 +62,32 @@ userRouter.route('/register')
                             lastName: req.body.lastName
                         });
 
-                        newUser.save();
+                        return newUser.save();
 
+                    })
+                    .then((result) => {
                         //Set a success message
                         req.flash('success', 'You are successfully registered. Please, log in here.')
-
                         res.redirect('/users/login');
-                    });
+
+                        //Create an email to send
+                        const email = {
+                            to: req.body.email,
+                            from: 'aashis_rimal@yahoo.com',
+                            subject: 'Welcome to Kinmel.com.',
+                            html: '<h1>You are successfully registerd to Kinmel.com.</h1>'
+                        };
+
+                        //Send mail after redirection using the mailer defined above
+                         return mailer.sendMail(email)
+                            .then((result) => {
+                                console.log(result);
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                            });
+                    })
+
             })
             .catch((err) => {
                 console.log(err);
