@@ -8,9 +8,11 @@
         <div class="navbar-nav mr-auto">
             <a class="nav-item nav-link <%= active === 'shop' ? 'active' : '' %>" href="/">Shop <span
                         class="sr-only">(current)</span></a>
-            <% if (isLoggedIn) { %>
+            <% if (isAdmin) { %>
                 <a class="nav-item nav-link <%= active === 'addProduct' ? 'active' : '' %>"
                    href="/products/add-product">Add Product</a>
+            <% } %>
+            <% if (isLoggedIn) { %>
                 <a class="nav-item nav-link <%= active === 'cart' ? 'active' : '' %>" href="/cart">Cart</a>
                 <a class="nav-item nav-link <%= active === 'orders' ? 'active' : '' %>" href="/orders">Orders</a>
             <% } %>

@@ -96,8 +96,9 @@ app.use(csrfProtection);
 
 //Set local variables that are passed in to all the views that are rendered
 app.use((req, res, next) => {
-    res.locals.user = req.user,
-    res.locals.isLoggedIn = req.session.authenticated,
+    res.locals.user = req.user;
+    res.locals.isLoggedIn = req.session.authenticated;
+    res.locals.isAdmin = req.session.isAdmin;
     res.locals.csrfToken = req.csrfToken(); //Pass the csrfToken to the view which is in req
     next();
 });

@@ -140,6 +140,14 @@ userRouter.route('/login')
                             //Create a session for the logged in user
                             req.session.authenticated = true;
                             req.session.user = user;
+
+                            //If user is admin, store in session
+                            if (user.admin === true) {
+                                req.session.isAdmin = true;
+                            } else {
+                                req.session.isAdmin = false;
+                            }
+
                             return req.session.save((err) => {
                                 console.log(err);
                                 res.redirect('/');

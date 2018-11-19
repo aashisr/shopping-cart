@@ -27,6 +27,11 @@ const productSchema = new Schema({
         type: Currency,
         required: true,
         min: 0
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
 }, {
     //Creates the created and modified time automatically

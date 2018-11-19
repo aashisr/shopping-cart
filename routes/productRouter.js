@@ -29,13 +29,14 @@ productRouter.route('/')
     });
 
 productRouter.route('/add-product')
-    .get(authenticate.isLoggedIn, (req, res, next) => {
+    .get(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
         res.render('product/addProduct.ejs', {
             pageTitle: 'Add Product',
-            active: 'addProduct'
+            active: 'addProduct',
+            userId: req.user._id
         });
     })
-    .post(authenticate.isLoggedIn, (req, res, next) => {
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
         //Post the parsed request to the Products model i.e products collection
         //req.body is already parsed by bodyParser
         //create is a mongoose method
@@ -47,7 +48,7 @@ productRouter.route('/add-product')
     });
 
 productRouter.route('/edit/:productId')
-    .get(authenticate.isLoggedIn, (req, res, next) => {
+    .get(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
         Products.findById(req.params.productId)
             .then((product) => {
                 res.render('product/editProduct.ejs', {
@@ -58,7 +59,7 @@ productRouter.route('/edit/:productId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post(authenticate.isLoggedIn, (req, res, next) => {
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
         //Find the product by id and update
         Products.findByIdAndUpdate(req.params.productId,
             { $set: req.body },
@@ -85,7 +86,7 @@ productRouter.route('/details/:productId')
     });
 
 productRouter.route('/delete/:productId')
-    .get(authenticate.isLoggedIn, (req, res, next) => {
+    .get(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
         Products.findByIdAndRemove(req.params.productId)
             .then((response) => {
                 console.log(response);
