@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -85,6 +86,7 @@ userRouter.route('/register')
                             })
                             .catch((err) => {
                                 console.log(err);
+                                next(err);
                             });
                     })
 
@@ -166,6 +168,156 @@ userRouter.route('/logout')
             console.log(err);
             res.redirect('/');
         });
+    });
+
+userRouter.route('/reset-password')
+    .get((req, res, next) => {
+        //Get the success and error messages
+        const successMessage = req.flash('success');
+        const errorMessage = req.flash('error');
+
+        res.render('user/resetPassword.ejs', {
+            pageTitle: 'Reset password',
+            active: 'reset',
+            successMessage: successMessage,
+            errorMessage: errorMessage
+        });
+    })
+    .post((req, res, next) => {
+        const email = req.body.email;
+
+        //Create a unique random crypto value of length 32 bytes to send it with the email
+        crypto.randomBytes(32, (err, buffer) => {
+            if (err){
+                console.log('Crypto buffer error: ', err);
+                res.redirect('/users/resetPassword');
+            }
+
+            //Generate a token from the buffer and convert hexadecimal characters to ascii characters
+            const token = buffer.toString('hex');
+
+            //Find the user by email and store this token and the expiration date in the database
+            Users.findOne({email: email})
+                .then((user) => {
+                    if (!user) {
+                        req.flash('error', 'User does not exist with this email.');
+                        return res.redirect('/users/reset-password');
+                    }
+
+                    //Save the token and expiration date to user
+                    user.resetToken = token;
+                    user.resetTokenExpires = Date.now() + 1000*60*60; //1 hour from now
+
+                    //Save the user first and send the email
+                    return user.save()
+                        .then((user) => {
+                            res.redirect('/');
+                            //Send the email to user
+                            //Create an email to send
+                            const email = {
+                                to: req.body.email,
+                                from: 'aashis_rimal@yahoo.com',
+                                subject: 'Reset Password',
+                                html: "<h1>Hi " + user.firstName + ",</h1>" +
+                               "<p>A request was sent to reset the password for the account linked to this email.</p>" +
+                                "<p>To proceed, simply click on this" +
+                                "<a href='http://localhost:3000/users/reset-password/"+ token +"'> link</a>.</p>"
+                            };
+
+                            //Send mail after redirection using the mailer defined above
+                            return mailer.sendMail(email)
+                                .then((result) => {
+                                    console.log(result);
+                                })
+                                .catch((err) => {
+                                    console.log(err);
+                                    next(err);
+                                });
+                        });
+                })
+                .catch((err) => {
+                    console.log(err);
+                    next(err);
+                })
+        });
+
+    });
+
+userRouter.route('/reset-password/:token')
+    .get((req, res, next) => {
+        const token = req.params.token;
+
+        //Find the user with this token which is still valid, i.e expiration date is greater than the current date
+        Users.findOne({resetToken: token, resetTokenExpires: {$gt: Date.now()}})
+            .then((user) => {
+                if (!user) {
+                    req.flash('error', 'The user does not exist or the token has expired.');
+                    return res.redirect('/users/reset-password');
+                }
+
+                //Get the success and error messages
+                const successMessage = req.flash('success');
+                const errorMessage = req.flash('error');
+
+                res.render('user/enterNewPassword.ejs', {
+                    pageTitle: 'Enter New password',
+                    active: 'newPassword',
+                    userId: user._id,
+                    resetToken: token,
+                    successMessage: successMessage,
+                    errorMessage: errorMessage
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+                next(err);
+            });
+
+    });
+
+userRouter.route('/new-password')
+    .post((req, res, next) => {
+        //Get the form inputs
+        const userId = req.body.userId;
+        const newPassword = req.body.password;
+        const resetToken = req.body.resetToken;
+
+        //Find the user with the above id, reset token and a valid expiration date
+        Users.findOne({ _id: userId, resetToken: resetToken, resetTokenExpires: {$gt: Date.now()} })
+            .then((user) => {
+                if (!user){
+                    req.flash('error', 'The user does not exist or the token has expired.');
+                    return res.redirect('/users/reset-password');
+                }
+
+                //Hash the password
+                bcrypt.hash(newPassword, 12)
+                    .then((hashedPassword) => {
+                        //Save the user with this new password and token and expiration date as undefined
+                        user.password = hashedPassword;
+                        user.resetToken = undefined;
+                        user.resetTokenExpires = undefined;
+
+                        return user.save()
+                            .then((result) => {
+                                res.redirect('/users/login');
+                            })
+                            .catch((err) => {
+                                console.log(err);
+                                next(err);
+                            });
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        next(err);
+                    });
+
+            })
+            .catch((err) => {
+                console.log(err);
+                next(err);
+            });
+
     });
 
 module.exports = userRouter;

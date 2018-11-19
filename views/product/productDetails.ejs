@@ -10,7 +10,7 @@
             <div class="image">
                 <img src="<%= product.imagePath %>" alt="<%= product.title %>">
             </div>
-            <h2><%= product.price %></h2>
+            <h2>€ <%= product.price / 100 %></h2>
             <p><%= product.description %></p>
             <% if (isLoggedIn) { %>
                 <form action="/cart/add-product" method="post">
