@@ -70,11 +70,12 @@ userRouter.route('/register')
                             return Promise.reject('User with given email already exists.');
                         }
                     });
-            }),
-        body('firstName', 'Please, enter a valid first name.').isAlpha(),
-        body('lastName').isAlpha().withMessage('Please, enter a valid last name.'),
+            })
+            .normalizeEmail(),
+        body('firstName', 'Please, enter a valid first name.').isAlpha().trim(),
+        body('lastName').isAlpha().withMessage('Please, enter a valid last name.').trim(),
         //Get password from req.body
-        body('password').isLength({min: 6}).withMessage('Password must be at lease 6 characters long.'),
+        body('password').isLength({min: 6}).withMessage('Password must be at lease 6 characters long.').trim(),
         //Add a custom validator to check if the passwords match
         body('confirmPassword').custom((value, { req }) => {
             if (value !== req.body.password) {
@@ -83,7 +84,7 @@ userRouter.route('/register')
 
             //If matches
             return true;
-        })
+        }).trim()
     , (req, res, next) => {
             //Get user submitted values
             const email = req.body.email;
