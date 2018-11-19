@@ -4,6 +4,8 @@ const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+//Import subpackages of express-validator and store it in a object using destructuring
+const { check, body, validationResult } = require('express-validator/check');
 const nodemailer = require('nodemailer');
 const sendgridTransport = require('nodemailer-sendgrid-transport');
 
@@ -39,62 +41,122 @@ userRouter.route('/register')
         res.render('user/register.ejs', {
             pageTitle: 'Register',
             active: 'register',
-            errorMessage: errorMessage
+            errorMessage: errorMessage,
+            //Display the previous input in the form as empty string
+            previousInput: {
+                email: "",
+                password: "",
+                confirmPassword: "",
+                firstName: "",
+                lastName: ""
+            }
         });
     })
-    .post((req, res, next) => {
-        //Find if a user already exists
-        Users.findOne({email: req.body.email})
-            .then((user) => {
-                //If user with given email exists already
-                if (user) {
-                    req.flash('error', 'User with given email already exists.');
-                    return res.redirect('/users/register');
+    //Add validation for user input,
+    // check finds the name either from cookies, params, header, query or body
+    //body finds the name from the req.body only
+    //So, no need to specify req.body.email
+    .post(
+        //Get email from cookies, params, header, query or body
+        //second parameter is the error message for all checks in check firstName
+        body('email').isEmail().withMessage('Please, enter a valid email.')
+            //Check if user exists already in here with custom validator
+            .custom((value, { req }) => {
+                //Custom validator needs to return true or false
+                return Users.findOne({ email: value })
+                    .then((user) => {
+                        if (user) {
+                            //reject throws an error inside promise
+                            return Promise.reject('User with given email already exists.');
+                        }
+                    });
+            }),
+        body('firstName', 'Please, enter a valid first name.').isAlpha(),
+        body('lastName').isAlpha().withMessage('Please, enter a valid last name.'),
+        //Get password from req.body
+        body('password').isLength({min: 6}).withMessage('Password must be at lease 6 characters long.'),
+        //Add a custom validator to check if the passwords match
+        body('confirmPassword').custom((value, { req }) => {
+            if (value !== req.body.password) {
+                throw new Error('Passwords do not match.');
+            }
+
+            //If matches
+            return true;
+        })
+    , (req, res, next) => {
+            //Get user submitted values
+            const email = req.body.email;
+            const password = req.body.password;
+            const confirmPassword = req.body.confirmPassword;
+            const firstName = req.body.firstName;
+            const lastName = req.body.lastName;
+
+        //Store the validation results in this request in the errors constant
+        const errors = validationResult(req);
+
+        //Check if there are errors
+        if (!errors.isEmpty()){
+            //If the errors is not empty, render the same page again and display the errors
+            //422 -> Unprocessable entity
+            return res.status(422).render('user/register.ejs', {
+                pageTitle: 'Register',
+                active: 'register',
+                errorMessage: errors.array()[0].msg, //Array of errors, take the first error
+                //Display the previous input in the form
+                previousInput: {
+                    email: email,
+                    password: password,
+                    confirmPassword: confirmPassword,
+                    firstName: firstName,
+                    lastName: lastName
                 }
+            });
+        }
 
-                //If user does not exist
-                //Hash the password with bcrypt which returns a promise and create a new user
-                return bcrypt.hash(req.body.password, 12)
-                    .then((hashedPassword) => {
-                        const newUser = new Users({
-                            email: req.body.email,
-                            password: hashedPassword,
-                            firstName: req.body.firstName,
-                            lastName: req.body.lastName
-                        });
+        //User existence is checked already with the express validator
 
-                        return newUser.save();
+        //Hash the password with bcrypt which returns a promise and create a new user
+        bcrypt.hash(password, 12)
+            .then((hashedPassword) => {
+                const newUser = new Users({
+                    email: email,
+                    password: hashedPassword,
+                    firstName: firstName,
+                    lastName: lastName
+                });
 
-                    })
+                return newUser.save();
+
+            })
+            .then((result) => {
+                //Set a success message
+                req.flash('success', 'You are successfully registered. Please, log in here.')
+                res.redirect('/users/login');
+
+                //Create an email to send
+                const email = {
+                    to: email,
+                    from: 'aashis_rimal@yahoo.com',
+                    subject: 'Welcome to Kinmel.com.',
+                    html: '<h1>You are successfully registerd to Kinmel.com.</h1>'
+                };
+
+                //Send mail after redirection using the mailer defined above
+                 return mailer.sendMail(email)
                     .then((result) => {
-                        //Set a success message
-                        req.flash('success', 'You are successfully registered. Please, log in here.')
-                        res.redirect('/users/login');
-
-                        //Create an email to send
-                        const email = {
-                            to: req.body.email,
-                            from: 'aashis_rimal@yahoo.com',
-                            subject: 'Welcome to Kinmel.com.',
-                            html: '<h1>You are successfully registerd to Kinmel.com.</h1>'
-                        };
-
-                        //Send mail after redirection using the mailer defined above
-                         return mailer.sendMail(email)
-                            .then((result) => {
-                                console.log(result);
-                            })
-                            .catch((err) => {
-                                console.log(err);
-                                next(err);
-                            });
+                        console.log(result);
                     })
-
+                    .catch((err) => {
+                        console.log('Sendgrid ', err);
+                        next(err);
+                    });
             })
             .catch((err) => {
                 console.log(err);
-                res.redirect('/users/register');
+                next(err);
             });
+
 
         //register is a passportLocalMongoose method, checks if email is unique
         /*Users.register(new Users({email: req.body.email}), req.body.password, (err, user) => {
