@@ -179,17 +179,54 @@ userRouter.route('/login')
             pageTitle: 'Login',
             active: 'login',
             successMessage: successMessage,
-            errorMessage: errorMessage
+            errorMessage: errorMessage,
+            //Previous input for errors
+            previousInput: {
+                email: '',
+                password: ''
+            }
         });
     })
-    .post((req, res, next) => {
+    .post(
+        body('email').isEmail().withMessage('Please, enter a valid email.'),
+        (req, res, next) => {
+            //Get the user submitted values
+            const email = req.body.email;
+            const password = req.body.password;
+
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()) {
+                //If the errors is not empty, render the same page again and display the errors
+                return res.status(422).render('user/login.ejs', {
+                    pageTitle: 'Login',
+                    active: 'login',
+                    successMessage: "",
+                    errorMessage: errors.array()[0].msg, //Array of errors, take the first error
+                    //Display the previous input in the form
+                    previousInput: {
+                        email: email,
+                        password: password
+                    }
+                });
+            }
+
         //Find the user from our database by the email provided by user
-        Users.findOne({email: req.body.email})
+        Users.findOne({email: email})
             .then((user) => {
                 //If user does not exist
                 if (!user) {
-                    req.flash('error', 'Invalid email or password. Please, try again.');
-                    return res.redirect('/users/login');
+                    return res.status(422).render('user/login.ejs', {
+                        pageTitle: 'Login',
+                        active: 'login',
+                        successMessage: "",
+                        errorMessage: 'Invalid email or password. Please, try again.',
+                        //Display the previous input in the form
+                        previousInput: {
+                            email: email,
+                            password: password
+                        }
+                    });
                 }
 
                 //User exists
@@ -217,8 +254,17 @@ userRouter.route('/login')
                         }
 
                         //If password is not valid,
-                        req.flash('error', 'Invalid email or password. Please, try again.');
-                        res.redirect('/users/login');
+                        return res.status(422).render('user/login.ejs', {
+                            pageTitle: 'Login',
+                            active: 'login',
+                            successMessage: "",
+                            errorMessage: 'Invalid email or password. Please, try again.',
+                            //Display the previous input in the form
+                            previousInput: {
+                                email: email,
+                                password: password
+                            }
+                        });
                     })
                     .catch((err) => {
                         req.flash('error', err);
