@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 //Import products model and store in Products variable
 const Products = require('../models/products');
 const authenticate = require('../authenticate');
+const { body, validationResult } = require('express-validator/check');
 
 //Declare productRouter as express router
 const productRouter = express.Router();
@@ -33,10 +34,42 @@ productRouter.route('/add-product')
         res.render('product/addProduct.ejs', {
             pageTitle: 'Add Product',
             active: 'addProduct',
-            userId: req.user._id
+            errorMessage: [],
+            //Display the previous input in the form
+            previousInput: {
+                title: "",
+                price: "",
+                imagePath: "",
+                description:""
+            }
         });
     })
-    .post(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, [
+        body('title').isString().withMessage('Title should be a string.').trim().escape(),
+        body('price').isNumeric().withMessage('Price should only contain numbers.').trim().escape(),
+        body('description', 'Description should not be more than 200 characters.')
+            .isString().isLength({max: 200}).trim().escape(),
+        ],
+        (req, res, next) => {
+        console.log(req.body);
+            //Get the validation errors
+            const errors = validationResult(req);
+
+            if (!errors.isEmpty()){
+                return res.status(422).render('product/addProduct.ejs', {
+                    pageTitle: 'Add Product',
+                    active: 'addProduct',
+                    errorMessage: errors.array()[0].msg, //Array of errors, take the first error
+                    //Display the previous input in the form
+                    previousInput: {
+                        title: req.body.title,
+                        price: req.body.price,
+                        imagePath: req.body.imagePath,
+                        description: req.body.description,
+                    }
+                });
+            }
+
         //Post the parsed request to the Products model i.e products collection
         //req.body is already parsed by bodyParser
         //create is a mongoose method
@@ -54,12 +87,37 @@ productRouter.route('/edit/:productId')
                 res.render('product/editProduct.ejs', {
                     product: product,
                     pageTitle: 'Edit Product',
-                    active: 'addProduct'
+                    active: 'addProduct',
+                    errorMessage: ""
                 });
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, [
+        body('title').isString().withMessage('Title should be a string.').trim().escape(),
+        body('price').isNumeric().withMessage('Price should only contain numbers.').trim().escape(),
+        body('description', 'Description should not be more than 200 characters.')
+            .isString().isLength({max: 200}).trim().escape(),
+        ], (req, res, next) => {
+        //Get the validation errors
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(422).render('product/editProduct.ejs', {
+                pageTitle: 'Edit Product',
+                active: 'addProduct',
+                errorMessage: errors.array()[0].msg, //Array of errors, take the first error
+                //Display the previous input in the form
+                product: {
+                    _id: req.params.productId,
+                    title: req.body.title,
+                    price: req.body.price * 100, //Since it is a currency
+                    imagePath: req.body.imagePath,
+                    description: req.body.description,
+                }
+            });
+        }
+
         //Find the product by id and update
         Products.findByIdAndUpdate(req.params.productId,
             { $set: req.body },

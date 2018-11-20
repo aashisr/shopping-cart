@@ -7,6 +7,11 @@
     <div class="row">
         <div class="col-6 mx-auto">
             <h1>Edit product</h1>
+            <% if (errorMessage.length > 0) { %>
+                <div class="alert alert-danger">
+                    <%= errorMessage %>
+                </div>
+            <% } %>
             <form action="/products/edit/<%= product._id %>" method="post">
                 <div class="form-group">
                     <label for="title">Title</label>
