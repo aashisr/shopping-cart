@@ -154,7 +154,6 @@ userRouter.route('/register')
                     });
             })
             .catch((err) => {
-                console.log(err);
                 next(err);
             });
 

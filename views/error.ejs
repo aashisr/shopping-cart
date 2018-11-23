@@ -1,3 +1,11 @@
-<h1><%= message %></h1>
-<h2><%= error.status %></h2>
-<pre><%= error.stack %></pre>
+<%- include('shared/header.ejs') %>
+</head>
+<body>
+<%- include('shared/navbar.ejs') %>
+
+<div class="container">
+    <h2><%= message %></h2>
+    <p>Go to the home page.</p>
+</div>
+
+<%- include('shared/footer.ejs') %>

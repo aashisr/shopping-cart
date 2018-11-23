@@ -20,6 +20,14 @@ productRouter.route('/')
         //Find all the products from the Products model i.e products collection in database
         Products.find()
             .then((products) => {
+                if (!products) {
+                    const err = {
+                        message: 'There are no products yet..'
+                    };
+
+                    next(err);
+                }
+
                 res.render('index.ejs', {
                     products: products,
                     pageTitle: 'Shopping Cart',
@@ -51,7 +59,6 @@ productRouter.route('/add-product')
             .isString().isLength({max: 200}).trim().escape(),
         ],
         (req, res, next) => {
-        console.log(req.body);
             //Get the validation errors
             const errors = validationResult(req);
 
@@ -133,13 +140,23 @@ productRouter.route('/details/:productId')
     .get((req, res, next) => {
         Products.findById(req.params.productId)
             .then((product) => {
+                if (!product) {
+                    const err = {
+                        message: 'Product does not exist.'
+                    };
+
+                    next(err);
+                }
+
                 res.render('product/productDetails.ejs', {
                     product: product,
                     pageTitle: product.title,
                     active: 'shop'
                 });
-            }, (err) => next(err))
-            .catch((err) => next(err));
+            })
+            .catch((err) => {
+                next(err);
+            });
 
     });
 
