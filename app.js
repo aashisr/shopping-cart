@@ -131,13 +131,12 @@ app.use('/', indexRouter);
 // error handler
 app.use(function(err, req, res, next) {
     console.log('Error handler ',err);
-    console.log('Error handler ',req.session);
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
+  //res.status(err.status || 500);
   res.render('error', {
       pageTitle: 'Error ' + err.status,
       active: 'error',
