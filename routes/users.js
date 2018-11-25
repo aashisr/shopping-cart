@@ -25,9 +25,6 @@ const mailer = nodemailer.createTransport(sendgridTransport(sendgridOptions));
 
 const userRouter = express.Router();
 
-//Make use of body parser
-userRouter.use(bodyParser.json());
-
 /* GET users listing. */
 userRouter.get('/', function(req, res, next) {
   res.send('respond with a resource');
@@ -146,14 +143,15 @@ userRouter.route('/register')
                 //Send mail after redirection using the mailer defined above
                  return mailer.sendMail(email)
                     .then((result) => {
-                        console.log(result);
+                        console.log('Send grid success post register ',result);
                     })
                     .catch((err) => {
-                        console.log('Sendgrid ', err);
+                        console.log('Sendgrid error post register', err);
                         next(err);
                     });
             })
             .catch((err) => {
+                console.log('post register ', err)
                 next(err);
             });
 
@@ -238,7 +236,7 @@ userRouter.route('/login')
                         if (match) {
                             //Create a session for the logged in user
                             req.session.authenticated = true;
-                            req.session.user = user;
+                            req.session.user = user._id;
 
                             //If user is admin, store in session
                             if (user.admin === true) {
@@ -248,7 +246,7 @@ userRouter.route('/login')
                             }
 
                             return req.session.save((err) => {
-                                console.log(err);
+                                console.log('Post login ',err);
                                 res.redirect('/');
                             });
                         }
@@ -281,7 +279,7 @@ userRouter.route('/login')
 userRouter.route('/logout')
     .get(authenticate.isLoggedIn, (req, res, next) => {
         req.session.destroy((err) => {
-            console.log(err);
+            console.log('Logout ',err);
             res.redirect('/');
         });
     });
@@ -305,7 +303,7 @@ userRouter.route('/reset-password')
         //Create a unique random crypto value of length 32 bytes to send it with the email
         crypto.randomBytes(32, (err, buffer) => {
             if (err){
-                console.log('Crypto buffer error: ', err);
+                req.flash('error','Something went wrong. Please try again.');
                 res.redirect('/users/resetPassword');
             }
 
@@ -343,16 +341,16 @@ userRouter.route('/reset-password')
                             //Send mail after redirection using the mailer defined above
                             return mailer.sendMail(email)
                                 .then((result) => {
-                                    console.log(result);
+                                    console.log('Mailer success ',result);
                                 })
                                 .catch((err) => {
-                                    console.log(err);
+                                    console.log('Mailer error ',err);
                                     next(err);
                                 });
                         });
                 })
                 .catch((err) => {
-                    console.log(err);
+                    console.log('Post reset password ',err);
                     next(err);
                 })
         });
@@ -385,7 +383,7 @@ userRouter.route('/reset-password/:token')
                 });
             })
             .catch((err) => {
-                console.log(err);
+                console.log('Get reset password token ',err);
                 next(err);
             });
 
@@ -419,18 +417,18 @@ userRouter.route('/new-password')
                                 res.redirect('/users/login');
                             })
                             .catch((err) => {
-                                console.log(err);
+                                console.log('Post new password user saave ',err);
                                 next(err);
                             });
                     })
                     .catch((err) => {
-                        console.log(err);
+                        console.log('Post new password bcrypt ',err);
                         next(err);
                     });
 
             })
             .catch((err) => {
-                console.log(err);
+                console.log('Post new password ',err);
                 next(err);
             });
 

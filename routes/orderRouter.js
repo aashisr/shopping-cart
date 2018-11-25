@@ -10,9 +10,6 @@ const authenticate = require('../authenticate');
 
 const orderRouter = express.Router();
 
-//Make use of body parser
-orderRouter.use(bodyParser.json());
-
 orderRouter.route('/')
     .get(authenticate.isLoggedIn, (req, res, next) => {
         //Get the orders of only the logged in user

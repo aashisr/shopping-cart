@@ -12,7 +12,7 @@
                     <%= errorMessage %>
                 </div>
             <% } %>
-            <form action="/products/edit/<%= product._id %>" method="post">
+            <form action="/products/edit/<%= product._id %>?_csrf=<%= csrfToken %>" method="post" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="title">Title</label>
                     <input type="text" class="form-control" id="title" name="title" value="<%= product.title %>"
@@ -20,7 +20,7 @@
                 </div>
                 <div class="form-group">
                     <label for="image">Image</label>
-                    <input type="text" class="form-control" name="imagePath" id="image" value="<%= product.imagePath %>">
+                    <input type="file" class="form-control" name="image" id="image">
                 </div>
                 <div class="form-group">
                     <label for="price">Price</label>
@@ -31,7 +31,6 @@
                     <label for="description">Description</label>
                     <textarea class="form-control" id="description" rows="3" name="description"><%= product.description %></textarea>
                 </div>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="btn btn-primary">Update</button>
             </form>
         </div>

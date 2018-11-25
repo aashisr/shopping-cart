@@ -9,10 +9,6 @@ const authenticate = require('../authenticate');
 
 const cartRouter = express.Router();
 
-//Make use of body parser
-
-cartRouter.use(bodyParser.json());
-
 cartRouter.route('/')
     .get(authenticate.isLoggedIn, (req, res, next) => {
         //req.user already contains the user object which also includes the cart

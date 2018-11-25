@@ -3,17 +3,45 @@ const express = require('express');
 
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+//Middleware for handling multipart/form data (file upload)
+const multer = require('multer');
 
 //Import products model and store in Products variable
 const Products = require('../models/products');
 const authenticate = require('../authenticate');
 const { body, validationResult } = require('express-validator/check');
 
+//Tell multer where to store the submitted files
+const storage = multer.diskStorage({
+    //Specify destination for the file to be stored
+    destination: (req, file, cb) => {
+        //First parameter is the error and second is the destination
+        cb(null, 'public/images');
+    },
+    //Specify the name of the submitted file
+    filename: (req, file, cb) => {
+        //Set the name to be the original name of the file
+        //Add the date timestamp before the file name so that the name does  not repeat
+        cb(null, Date.now() +'-'+ file.originalname);
+    }
+});
+
+//Check the file type
+const imageFilter = (req, file, cb) => {
+    //Check the file type using regular expression (regex)
+    if (file.originalname.match(/\.(jpg|jpeg|png|gif)$/)){
+        //Accept the file, error is null
+        cb(null, true);
+    } else {
+        cb(null, false)
+    }
+};
+
+//Configure multer, set the storage to storage defined above and file filter as defined above
+const upload = multer({storage: storage, fileFilter: imageFilter});
+
 //Declare productRouter as express router
 const productRouter = express.Router();
-
-//Make use of body parser
-productRouter.use(bodyParser.json());
 
 productRouter.route('/')
     .get((req, res, next) => {
@@ -39,6 +67,7 @@ productRouter.route('/')
 
 productRouter.route('/add-product')
     .get(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
+        console.log('Get add product csrftoken ',req.csrfToken());
         res.render('product/addProduct.ejs', {
             pageTitle: 'Add Product',
             active: 'addProduct',
@@ -52,27 +81,50 @@ productRouter.route('/add-product')
             }
         });
     })
-    .post(authenticate.isLoggedIn, authenticate.isAdmin, [
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, /*[
         body('title').isString().withMessage('Title should be a string.').trim().escape(),
         body('price').isNumeric().withMessage('Price should only contain numbers.').trim().escape(),
         body('description', 'Description should not be more than 200 characters.')
             .isString().isLength({max: 200}).trim().escape(),
-        ],
+        ],*/
+        upload.single('image'), //Specify single file upload and image is the name of input field
         (req, res, next) => {
+            //Get the data submitted
+            const userId = req.body.user;
+            const title = req.body.title;
+            const image = req.file;
+            const price = req.body.price;
+            const description = req.body.description;
+
             //Get the validation errors
-            const errors = validationResult(req);
+            /*const errors = validationResult(req);
 
             if (!errors.isEmpty()){
+                console.log('Add product validation error ', errors.array());
                 return res.status(422).render('product/addProduct.ejs', {
                     pageTitle: 'Add Product',
                     active: 'addProduct',
                     errorMessage: errors.array()[0].msg, //Array of errors, take the first error
                     //Display the previous input in the form
                     previousInput: {
-                        title: req.body.title,
-                        price: req.body.price,
-                        imagePath: req.body.imagePath,
-                        description: req.body.description,
+                        title: title,
+                        price: price,
+                        description: description
+                    }
+                });
+            }*/
+
+            //If no image, return the same page with error
+            if (!image) {
+                return res.status(422).render('product/addProduct.ejs', {
+                    pageTitle: 'Add Product',
+                    active: 'addProduct',
+                    errorMessage: 'Image is required.',
+                    //Display the previous input in the form
+                    previousInput: {
+                        title: title,
+                        price: price,
+                        description: description
                     }
                 });
             }
@@ -80,8 +132,15 @@ productRouter.route('/add-product')
         //Post the parsed request to the Products model i.e products collection
         //req.body is already parsed by bodyParser
         //create is a mongoose method
-        Products.create(req.body)
+        Products.create({
+            user: userId,
+            title: title,
+            imagePath: '/'+image.path, //Add backslash so that we get the correct path when displaying the image
+            price: price,
+            description: description,
+        })
             .then((product) => {
+                console.log('Uploaded product is ',product);
                 res.redirect('/products/add-product');
             }, (err) => next(err))
             .catch((err) => next(err));
@@ -100,16 +159,26 @@ productRouter.route('/edit/:productId')
             }, (err) => next(err))
             .catch((err) => next(err));
     })
-    .post(authenticate.isLoggedIn, authenticate.isAdmin, [
+    .post(authenticate.isLoggedIn, authenticate.isAdmin, /*[
         body('title').isString().withMessage('Title should be a string.').trim().escape(),
         body('price').isNumeric().withMessage('Price should only contain numbers.').trim().escape(),
         body('description', 'Description should not be more than 200 characters.')
             .isString().isLength({max: 200}).trim().escape(),
-        ], (req, res, next) => {
+        ],*/
+        upload.single('image'), //Specify single file upload and image is the name of input field
+        (req, res, next) => {
+            //Get the data submitted
+            const productId = req.params.productId;
+            const title = req.body.title;
+            const image = req.file;
+            const price = req.body.price;
+            const description = req.body.description;
+
         //Get the validation errors
-        const errors = validationResult(req);
+        /*const errors = validationResult(req);
 
         if (!errors.isEmpty()) {
+            console.log('Edit product validation errors ',errors.array());
             return res.status(422).render('product/editProduct.ejs', {
                 pageTitle: 'Edit Product',
                 active: 'addProduct',
@@ -119,19 +188,28 @@ productRouter.route('/edit/:productId')
                     _id: req.params.productId,
                     title: req.body.title,
                     price: req.body.price * 100, //Since it is a currency
-                    imagePath: req.body.imagePath,
                     description: req.body.description,
                 }
             });
-        }
+        }*/
 
         //Find the product by id and update
-        Products.findByIdAndUpdate(req.params.productId,
-            { $set: req.body },
-            { new: true } //new: true is to return the updated dish
-            )
+        Products.findById(productId)
             .then((product) => {
-                res.redirect('/');
+                product.title = title;
+                product.price = price;
+                product.description = description;
+
+                //Update image if given, else leave the previous image as it is
+                if (image){
+                    product.imagePath = '/' + image.path;
+                }
+
+                //Save the product
+                product.save();
+
+                return res.redirect('/');
+
             }, (err) => next(err))
             .catch((err) => next(err));
     });
