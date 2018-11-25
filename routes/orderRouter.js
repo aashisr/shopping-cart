@@ -24,6 +24,7 @@ orderRouter.route('/')
     .post(authenticate.isLoggedIn, (req, res, next) => {
         //Get the user and the items in the cart
         req.user
+            .populate('cart.items.product')
             .execPopulate()
             .then((user) => {
                 //Create a new order
