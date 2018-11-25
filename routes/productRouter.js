@@ -10,6 +10,7 @@ const multer = require('multer');
 const Products = require('../models/products');
 const authenticate = require('../authenticate');
 const { body, validationResult } = require('express-validator/check');
+const fileMethods = require('../util/file');
 
 //Tell multer where to store the submitted files
 const storage = multer.diskStorage({
@@ -202,6 +203,9 @@ productRouter.route('/edit/:productId')
 
                 //Update image if given, else leave the previous image as it is
                 if (image){
+                    //Delete the previous image
+                    fileMethods.deleteFile(product.imagePath);
+                    //Add new path
                     product.imagePath = '/' + image.path;
                 }
 
@@ -240,12 +244,25 @@ productRouter.route('/details/:productId')
 
 productRouter.route('/delete/:productId')
     .get(authenticate.isLoggedIn, authenticate.isAdmin, (req, res, next) => {
-        Products.findByIdAndRemove(req.params.productId)
+        //Get the product to be removed first so that we can get the image to remove
+        Products.findById(req.params.productId)
+            .then((product) => {
+                if (!product) {
+                    const err = new Error('Product does not exist.');
+                    next(err);
+                }
+
+                fileMethods.deleteFile(product.imagePath);
+
+                return product.remove();
+
+            })
             .then((response) => {
                 console.log(response);
                 res.redirect('/');
             }, (err) => next(err))
             .catch((err) => next(err));
+
     });
 
 //Export this route as a module
