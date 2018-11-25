@@ -1,10 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-
 const express = require('express');
+const PdfDocument = require('pdfkit');
 
-const Users = require('../models/users');
-const Products = require('../models/products');
 const Orders = require('../models/orders');
 const authenticate = require('../authenticate');
 
@@ -50,13 +46,14 @@ orderRouter.route('/')
     });
 
 //Route to get the invoice for the given order id
-orderRouter.route('/:orderId')
+orderRouter.route('/invoice/:orderId')
     .get(authenticate.isLoggedIn, (req, res, next) => {
         //Get the order id and the invoice name which is stored in the database in the given form
         const orderId = req.params.orderId;
 
         //Check if the order belongs to the user
         Orders.findById(orderId)
+            .populate('products.product')
             .then((order) => {
                 if (!order){
                     const err = new Error('Order does not exist.');
@@ -71,17 +68,51 @@ orderRouter.route('/:orderId')
                 }
 
                 const invoiceName = 'invoice-' + orderId + '.pdf';
-                //Use path to construct the path so that it works on all operating systems
-                const invoicePath = path.join('public', 'invoices', invoiceName);
 
-                //Read the file in different chunks (not whole file)
-                const file = fs.createReadStream(invoicePath);
+                //Initialize a new pdf document
+                const pdf = new PdfDocument();
 
                 res.setHeader('Content-Type', 'application/pdf'); //Opens the file in the browser
                 res.setHeader('Content-Disposition', 'inline; filename="' + invoiceName + '"');
 
-                //Forward the read file step by step to res using pipe
-                file.pipe(res);
+                //Pipe the pdfDocument to a writeable file stream and send it as a response
+                pdf.pipe(res);
+
+                //Add a line of text to the pdf
+                pdf.fillColor('purple').fontSize(30).text('KinMel.com', 200, 20, {underline: true});
+                pdf.fillColor('black').fontSize(24).text('Invoice', 200, 60);
+
+                //Title
+                pdf.fontSize(20)
+                    .text('Product', 80, 100)
+                    .text('Quantity', 250, 100)
+                    .text('Rate', 350, 100)
+                    .text('Amount', 420, 100);
+
+                //Iterate through each of the products in order and write to file
+                //Increase x-length in each loop
+                let x = 130;
+                let totalSum = 0;
+                order.products.forEach((product, index) => {
+                    console.log(product);
+                    const sum = product.product.price / 100 * product.quantity;
+                    pdf.fontSize(16)
+                        .text(index + 1, 20, x)
+                        .text(product.product.title, 80, x)
+                        .text(product.quantity, 250, x)
+                        .text('€' + product.product.price / 100, 350, x)
+                        .text('€' + sum, 420, x);
+
+                    x += 20;
+                    totalSum += sum;
+                });
+
+                //Total sum
+                pdf.fontSize(20).text('Total Sum: €' + totalSum, 350, x + 30)
+
+                //Stop writing and send the response
+                pdf.end();
+
 
             })
             .catch((err) => {
