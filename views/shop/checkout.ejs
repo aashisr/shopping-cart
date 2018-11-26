@@ -1,0 +1,43 @@
+<%- include('../shared/header.ejs') %>
+</head>
+<body>
+<%- include('../shared/navbar.ejs') %>
+
+<div class="container">
+    <h1>Your Orders</h1>
+    <% if (products.length > 0) { %>
+        <ul class="list-unstyled">
+            <% products.forEach((product, index) => { %>
+                <li class="mb-2">
+                    <div class="row">
+                        <span class="col-1"><%= index + 1 %>.</span>
+                        <span class="col-4"><%= product.product.title %></span>
+                        <span class="col-4">Quantity: <%= product.quantity %></span>
+                        <span class="col-3">Rate: €<%= product.product.price / 100 .toFixed(2) %></span>
+                    </div>
+                </li>
+            <% }) %>
+        </ul>
+        <div class="text-center mt-5">
+            <h3>Total Amount: €<%= totalSum / 100 .toFixed(2) %></h3>
+        </div>
+        <div class="text-center">
+            <form action="/orders/checkout" method="POST">
+                <script
+                        src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                        data-key="pk_test_pHwgTEj4vCRi2rSxJ67srf1d"
+                        data-amount="<%= totalSum %>"
+                        data-name="Kinmel.com"
+                        data-description="Payment"
+                        data-image="https://stripe.com/img/documentation/checkout/marketplace.png"
+                        data-locale="auto"
+                        data-currency="eur">
+                </script>
+            </form>
+        </div>
+    <% } else { %>
+        <p class="text-center">No products added to the cart.</p>
+    <% } %>
+</div>
+
+<%- include('../shared/footer.ejs') %>

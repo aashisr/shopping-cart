@@ -12,6 +12,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 //Mongoose helps to impose a structure on the documents that is going to be stored in the database collection
 const mongoose = require('mongoose');
 const flash = require('connect-flash');
+const stripe = require("stripe")("sk_test_bpnwKXtAnMYhNU3vNyYuD9ml");
 
 const config = require('./config');
 const indexRouter = require('./routes/index');
@@ -19,8 +20,9 @@ const usersRouter = require('./routes/users');
 const productRouter = require('./routes/productRouter');
 const cartRouter = require('./routes/cartRouter');
 const orderRouter = require('./routes/orderRouter');
-const Products = require('./models/products');
+const Orders = require('./models/orders');
 const Users = require('./models/users');
+const authenticate = require('./authenticate');
 
 //url to connect to mongodb, imported from config.js
 const url = config.mongoUrl;
@@ -74,15 +76,12 @@ app.use(session({
     store: store //Store sessions in the store variable defined above
 }));
 
-//After session, because csrf token is stored in session
-app.use(csrfProtection);
 //Flash should be initialized after session
 app.use(flash());
 
 app.use((req, res, next) => {
     res.locals.isLoggedIn = req.session.authenticated;
     res.locals.isAdmin = req.session.isAdmin;
-    res.locals.csrfToken = req.csrfToken(); //Pass the csrfToken which is in req to the view
     next();
 });
 
@@ -97,6 +96,9 @@ app.use((req, res, next) => {
         //Find the user object by the user id from session
         Users.findById(req.session.user._id)
             .then((user) => {
+                if (!user) {
+                    return next();
+                }
                 //Store the returned user in req.user which has all methods defined in user model
                 req.user = user;
                 next();
@@ -108,11 +110,60 @@ app.use((req, res, next) => {
     }
 });
 
-//Set local variables that are passed in to all the views that are rendered
+//This is a form submitted through stripe which does not provide the csrf token
+//So we need to initialize csrf after this route
+app.post('/orders/checkout', authenticate.isLoggedIn, (req, res, next) => {
+    // Token is created using Checkout or Elements!
+    // Get the payment token ID submitted by the form:
+    const token = req.body.stripeToken; // Using Express
+
+    //Get the order data so that the client side data could not be manipulated by users
+    req.user
+        .populate('cart.items.product')
+        .execPopulate()
+        .then((user) => {
+            const products = user.cart.items;
+            //Get the total sum for passing it to stripe
+            //Can not rely on data passed to front-end since client side data could be manipulated by users
+            let totalSum = 0;
+            products.forEach((product) => {
+                totalSum += product.quantity * product.product.price;
+            });
+
+            //Create a new order
+            Orders.create({products: user.cart.items, user: user})
+                .then((order) => {
+                    //Charge the user here with stripe
+                    const charge = stripe.charges.create({
+                        amount: totalSum,
+                        currency: 'eur',
+                        description: 'Payment for Kinmel.com',
+                        source: token,
+                        //Store order id as meta-data to distinguish which order is the payment coming for
+                        metadata: {order: order._id.toString()}
+                    });
+
+                    //Empty the cart of this user
+                    req.user.emptyCart();
+
+                    //Redirect to orders
+                    res.redirect('/orders');
+                })
+                .catch((err) => {
+                    console.log('Error in creating order or paying: ', err);
+                    next(err);
+                });
+
+        }, (err) => next(err)) //sends the error to the error handler
+        .catch((err) => next(err));
+});
+
+//After session and post route from stripe, because csrf token is stored in session
+app.use(csrfProtection);
+
 app.use((req, res, next) => {
-    console.log('Req in app.js is ', req.csrfToken());
-    console.log('User in app.js is ', req.user);
     res.locals.user = req.user;
+    res.locals.csrfToken = req.csrfToken(); //Pass the csrfToken which is in req to the view
     next();
 });
 

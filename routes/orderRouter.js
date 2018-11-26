@@ -18,32 +18,30 @@ orderRouter.route('/')
                     orders: orders,
                     pageTitle: 'Your Orders',
                     active: 'orders'
-                })
+                });
             });
-    })
-    .post(authenticate.isLoggedIn, (req, res, next) => {
-        //Get the user and the items in the cart
+    });
+
+orderRouter.route('/checkout')
+    .get(authenticate.isLoggedIn, (req, res, next) => {
         req.user
             .populate('cart.items.product')
             .execPopulate()
             .then((user) => {
-                //Create a new order
-                Orders.create({products: user.cart.items, user: user})
-                    .then((order) => {
-                        //Empty the cart of this user
-                        req.user.emptyCart();
-
-                        res.redirect('/');
-
-                    }, (err) => next(err))
-                    .catch((err) => {
-                        next(err);
-                    });
-
-            }, (err) => next(err))
-            .catch((err) => {
-                next(err);
-            })
+                const products = user.cart.items;
+                //Get the total sum
+                let totalSum = 0;
+                products.forEach((product) => {
+                    totalSum += product.quantity * product.product.price;
+                });
+                res.render('shop/checkout.ejs', {
+                    products: products,
+                    pageTitle: 'Checkout',
+                    active: 'checkout',
+                    totalSum: totalSum
+                });
+            }, (err) => next(err)) //sends the error to the error handler
+            .catch((err) => next(err));
     });
 
 //Route to get the invoice for the given order id
