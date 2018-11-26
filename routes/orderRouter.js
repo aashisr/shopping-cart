@@ -8,18 +8,42 @@ const orderRouter = express.Router();
 
 orderRouter.route('/')
     .get(authenticate.isLoggedIn, (req, res, next) => {
-        //Get the orders of only the logged in user
-        Orders.find({user: req.user._id})
-            .populate('products.product')
-            .then((orders) => {
-                console.log('Orders: ', orders);
-                //Render the orders page
-                res.render('shop/orders.ejs', {
-                    orders: orders,
-                    pageTitle: 'Your Orders',
-                    active: 'orders'
+        //Check if user is admin
+        if (req.user.admin === true){
+            //Get all the orders
+            Orders.find()
+                .populate('user')
+                .then((adminOrders) => {
+                    console.log(adminOrders);
+                    //Render the orders page
+                    return res.render('shop/orders.ejs', {
+                        orders: adminOrders,
+                        pageTitle: 'All orders',
+                        active: 'orders'
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
+                    next(err);
                 });
-            });
+        }
+        else {
+            //Get the orders of only the logged in user
+            Orders.find({user: req.user._id})
+                .populate('products.product')
+                .then((userOrders) => {
+                    //Render the orders page
+                    return res.render('shop/orders.ejs', {
+                        orders: userOrders,
+                        pageTitle: 'Your orders',
+                        active: 'orders'
+                    });
+                })
+                .catch((err) => {
+                    console.log(err);
+                    next(err);
+                });
+        }
     });
 
 orderRouter.route('/checkout')

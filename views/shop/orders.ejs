@@ -10,18 +10,27 @@
             <% if (orders.length > 0) { %>
                 <ul class="list-unstyled">
                     <% orders.forEach((order, index) => { %>
-                        <h2 class="mb-2">Order <%= index + 1 %></h2>
-                        <% order.products.forEach((order, index) => { %>
-                            <li class="mb-2">
-                                <div class="row">
-                                    <span class="col-1"><%= index + 1 %>.</span>
-                                    <span class="col-4"><%= order.product.title %></span>
-                                    <span class="col-4">Quantity: <%= order.quantity %></span>
+                        <div class="mb-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h2 class="mb-2">Order <%= index + 1 %></h2>
                                 </div>
-                            </li>
-                        <% }) %>
-                        <div class="float-right">
-                            <a href="/orders/invoice/<%= order._id %>">Invoice</a>
+                                <div class="col-6 float-right mt-2">
+                                    <a href="/orders/invoice/<%= order._id %>">Invoice</a>
+                                </div>
+                            </div>
+                            <% if (isAdmin === true) { %>
+                                <p>Ordered by #<%= order.user._id %>, <%= order.user.email %></p>
+                            <% } %>
+                            <% order.products.forEach((order, index) => { %>
+                                <li class="mb-2">
+                                    <div class="row">
+                                        <span class="col-1"><%= index + 1 %>.</span>
+                                        <span class="col-4"><%= order.product.title %></span>
+                                        <span class="col-4">Quantity: <%= order.quantity %></span>
+                                    </div>
+                                </li>
+                            <% }) %>
                         </div>
                     <% }) %>
                 </ul>
